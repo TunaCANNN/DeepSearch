@@ -1,4 +1,4 @@
---// DeepSearch v12 - Full Version
+--// DeepSearch v12 - Full Version (Modern UI + Staged Scanning)
 local HttpService = game:GetService("HttpService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -9,18 +9,16 @@ local player = game.Players.LocalPlayer
 local currentLogs = {}
 local perfMode = "normal"
 local autoSave = true
-local version = "v12-full"
 
 local function log(text)
     local ts = os.date("%H:%M:%S")
     local line = "["..ts.."] "..text
     table.insert(currentLogs, line)
     if #currentLogs > 65 then table.remove(currentLogs, 1) end
-    -- Will be connected to UI later
-    print(line)
+    print(line) -- Will be replaced with UI later
 end
 
--- WordBank Loader
+-- WordBank
 local WORDBANK_URL = "https://raw.githubusercontent.com/YOUR_USERNAME/DeepSearch/main/wordbanks/main.json"
 
 local function loadWordBank()
@@ -44,17 +42,19 @@ local function loadWordBank()
     end
 end
 
--- High Value Items
+-- High Value Detection
 local HighValue = {
-    ["FireEvent"] = "RemoteEvent → Can be used for rapid fire",
-    ["ReloadEvent"] = "RemoteEvent → Instant reload potential",
-    ["Stats"] = "Contains weapon damage/stats",
+    ["FireEvent"] = "RemoteEvent → Rapid fire / No recoil",
+    ["ReloadEvent"] = "RemoteEvent → Instant reload",
+    ["Stats"] = "Weapon stats folder",
     ["IsAmmo"] = "Ammo marker",
+    ["MaxAmmo"] = "Max ammo value",
 }
 
-local function getFlag(obj)
+local function getFlagInfo(obj)
     if obj:IsA("Script") or obj:IsA("LocalScript") then
         if obj.Disabled == false then return "Active Script" end
+        if obj:FindFirstChild("RunContext") then return "Has RunContext" end
     end
     if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
         return "Remote Event/Function"
@@ -62,7 +62,7 @@ local function getFlag(obj)
     return nil
 end
 
--- Main Scanning Function
+-- Main Scan Function
 local function runScan(mode)
     log("Starting " .. mode .. " scan...")
     local keywords = loadWordBank()
@@ -73,7 +73,7 @@ local function runScan(mode)
 
         for _, kw in ipairs(keywords) do
             if string.find(v.Name, kw) and not string.find(v:GetFullName(), "CoreGui") then
-                local flag = getFlag(v)
+                local flag = getFlagInfo(v)
                 local high = HighValue[v.Name]
 
                 if high then
@@ -100,11 +100,11 @@ end
 -- Keybind (RightShift)
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.RightShift then
-        -- UI toggle will be added in ui.lua
-        print("[DeepSearch] Toggle UI (to be connected)")
+        print("[DeepSearch] Toggle UI (UI will be added)")
     end
 end)
 
+-- Startup
 log("DeepSearch Full Version loaded.")
 log("Executor: " .. (identifyexecutor and identifyexecutor() or "Unknown"))
 log("User: " .. player.Name)
