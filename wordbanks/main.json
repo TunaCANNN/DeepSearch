@@ -1,1 +1,31 @@
-
+{
+  "Weapons": [
+    "Gun", "Guns", "Rifle", "Pistol", "Shotgun", "Sniper", "SMG", "LMG", 
+    "Minigun", "Revolver", "Crossbow", "Bullet", "Bullets", "Ammo", "Magazine"
+  ],
+  "Loot_Economy": [
+    "Loot", "Chest", "Drop", "Ore", "Coin", "Coins", "Gem", "Gems", 
+    "Money", "Buy", "Sell", "Shop", "Trade", "Income", "Multiplier"
+  ],
+  "Survival": [
+    "Hunger", "Thirst", "Stamina", "Food", "Water", "Crafting", "Campfire", 
+    "Medkit", "Bandage", "Zombie", "Survivor"
+  ],
+  "UI_Buttons": [
+    "Button", "BuyButton", "SellButton", "MergeButton", "UpgradeButton", 
+    "Frame", "ShopButton", "CollectButton"
+  ],
+  "Remotes": [
+    "RemoteEvent", "RemoteFunction", "FireServer", "FireClient", 
+    "OnClientEvent", "ReloadEvent", "FireEvent"
+  ],
+  "Scripts": [
+    "Script", "LocalScript", "ModuleScript", "ButtonScript", "BuyScript"
+  ],
+  "PlayerData": [
+    "PlayerData", "Leaderstats", "Inventory", "Backpack", "Stats", "Data"
+  ],
+  "Tycoon": [
+    "Tycoon", "Plot", "Base", "Owner", "Upgrade", "Claim", "Build"
+  ]
+}
