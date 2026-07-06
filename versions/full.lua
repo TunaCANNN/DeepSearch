@@ -1,10 +1,10 @@
---// DeepSearch v12 - Full Version (With UI)
+--// DeepSearch v12 - Full Version (With Buttons)
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
 local player = game.Players.LocalPlayer
 
--- Create UI
+-- GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "DeepSearch"
 gui.ResetOnSpawn = false
@@ -20,7 +20,7 @@ main.Parent = gui
 Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
 
 local titleBar = Instance.new("Frame")
-titleBar.Size = UDim2.new(1, 0, 0, 30)
+titleBar.Size = UDim2.new(1, 0, 0, 28)
 titleBar.BackgroundColor3 = Color3.fromRGB(14, 14, 19)
 titleBar.Parent = main
 
@@ -34,9 +34,10 @@ title.Font = Enum.Font.Code
 title.TextXAlignment = Enum.TextXAlignment.Center
 title.Parent = titleBar
 
+-- Console
 local console = Instance.new("ScrollingFrame")
-console.Size = UDim2.new(1, -20, 1, -50)
-console.Position = UDim2.new(0, 10, 0, 38)
+console.Size = UDim2.new(1, -160, 1, -45)
+console.Position = UDim2.new(0, 150, 0, 35)
 console.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
 console.ScrollBarThickness = 5
 console.Parent = main
@@ -51,6 +52,13 @@ output.Font = Enum.Font.Code
 output.TextSize = 13
 output.TextWrapped = true
 output.Parent = console
+
+-- Sidebar
+local sidebar = Instance.new("Frame")
+sidebar.Size = UDim2.new(0, 140, 1, -38)
+sidebar.Position = UDim2.new(0, 6, 0, 34)
+sidebar.BackgroundColor3 = Color3.fromRGB(15, 8, 25)
+sidebar.Parent = main
 
 local currentLogs = {}
 
@@ -106,6 +114,34 @@ local function runScan(mode)
 
     log("Scan complete. Found " .. found .. " matches.")
 end
+
+-- Button Creator
+local function createButton(text, yPos, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, -10, 0, 30)
+    btn.Position = UDim2.new(0, 5, 0, yPos)
+    btn.BackgroundColor3 = Color3.fromRGB(25, 10, 42)
+    btn.TextColor3 = Color3.fromRGB(200, 150, 255)
+    btn.Text = text
+    btn.Font = Enum.Font.Code
+    btn.TextSize = 13
+    btn.Parent = sidebar
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    btn.MouseButton1Click:Connect(callback)
+end
+
+-- Buttons
+local y = 6
+createButton("Quick Scan", y, function() runScan("quick") end); y += 34
+createButton("Deep Scan", y, function() runScan("deep") end); y += 34
+createButton("Full Scan", y, function() runScan("full") end); y += 34
+createButton("Copy Logs", y, function()
+    if setclipboard then setclipboard(table.concat(currentLogs, "\n")) end
+end); y += 34
+createButton("Clear Logs", y, function()
+    currentLogs = {}
+    output.Text = ""
+end)
 
 -- Keybind
 UserInputService.InputBegan:Connect(function(input)
