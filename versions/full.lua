@@ -1,85 +1,100 @@
---// DeepSearch v12 - Full Version (Modern UI + Staged Scanning)
+--// DeepSearch v12 - Full Version (With UI)
 local HttpService = game:GetService("HttpService")
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
 local player = game.Players.LocalPlayer
 
--- Variables
+-- Create UI
+local gui = Instance.new("ScreenGui")
+gui.Name = "DeepSearch"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 850, 0, 520)
+main.Position = UDim2.new(0.5, -425, 0.5, -260)
+main.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
+main.BorderSizePixel = 0
+main.Parent = gui
+
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
+
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 30)
+titleBar.BackgroundColor3 = Color3.fromRGB(14, 14, 19)
+titleBar.Parent = main
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 1, 0)
+title.BackgroundTransparency = 1
+title.Text = "DeepSearch v12"
+title.TextColor3 = Color3.fromRGB(200, 200, 220)
+title.TextScaled = true
+title.Font = Enum.Font.Code
+title.TextXAlignment = Enum.TextXAlignment.Center
+title.Parent = titleBar
+
+local console = Instance.new("ScrollingFrame")
+console.Size = UDim2.new(1, -20, 1, -50)
+console.Position = UDim2.new(0, 10, 0, 38)
+console.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
+console.ScrollBarThickness = 5
+console.Parent = main
+
+local output = Instance.new("TextLabel")
+output.Size = UDim2.new(1, -8, 1, 0)
+output.BackgroundTransparency = 1
+output.TextColor3 = Color3.fromRGB(180, 100, 255)
+output.TextXAlignment = Enum.TextXAlignment.Left
+output.TextYAlignment = Enum.TextYAlignment.Top
+output.Font = Enum.Font.Code
+output.TextSize = 13
+output.TextWrapped = true
+output.Parent = console
+
 local currentLogs = {}
-local perfMode = "normal"
-local autoSave = true
 
 local function log(text)
     local ts = os.date("%H:%M:%S")
     local line = "["..ts.."] "..text
     table.insert(currentLogs, line)
-    if #currentLogs > 65 then table.remove(currentLogs, 1) end
-    print(line) -- Will be replaced with UI later
+    if #currentLogs > 60 then table.remove(currentLogs, 1) end
+    output.Text = table.concat(currentLogs, "\n")
+    console.CanvasPosition = Vector2.new(0, console.AbsoluteCanvasSize.Y)
 end
 
 -- WordBank
-local WORDBANK_URL = "https://raw.githubusercontent.com/YOUR_USERNAME/DeepSearch/main/wordbanks/main.json"
-
 local function loadWordBank()
     local success, data = pcall(function()
-        return game:HttpGet(WORDBANK_URL)
+        return game:HttpGet("https://raw.githubusercontent.com/TunaCANNN/DeepSearch/refs/heads/main/wordbanks/main.json")
     end)
-
     if success and data then
         local decoded = HttpService:JSONDecode(data)
         local keywords = {}
         for _, list in pairs(decoded) do
-            for _, word in ipairs(list) do
-                table.insert(keywords, word)
-            end
+            for _, word in ipairs(list) do table.insert(keywords, word) end
         end
-        log("Word bank loaded (" .. #keywords .. " words)")
         return keywords
-    else
-        log("Failed to load word bank")
-        return {}
     end
+    return {}
 end
 
--- High Value Detection
 local HighValue = {
     ["FireEvent"] = "RemoteEvent → Rapid fire / No recoil",
     ["ReloadEvent"] = "RemoteEvent → Instant reload",
-    ["Stats"] = "Weapon stats folder",
-    ["IsAmmo"] = "Ammo marker",
-    ["MaxAmmo"] = "Max ammo value",
 }
 
-local function getFlagInfo(obj)
-    if obj:IsA("Script") or obj:IsA("LocalScript") then
-        if obj.Disabled == false then return "Active Script" end
-        if obj:FindFirstChild("RunContext") then return "Has RunContext" end
-    end
-    if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
-        return "Remote Event/Function"
-    end
-    return nil
-end
-
--- Main Scan Function
 local function runScan(mode)
     log("Starting " .. mode .. " scan...")
     local keywords = loadWordBank()
-
     local found = 0
-    for _, v in ipairs(game:GetDescendants()) do
-        if perfMode == "light" and math.random() > 0.5 then continue end
 
+    for _, v in ipairs(game:GetDescendants()) do
         for _, kw in ipairs(keywords) do
             if string.find(v.Name, kw) and not string.find(v:GetFullName(), "CoreGui") then
-                local flag = getFlagInfo(v)
                 local high = HighValue[v.Name]
-
                 if high then
                     log("→ " .. v:GetFullName() .. " | " .. high)
-                elseif flag then
-                    log("→ " .. v:GetFullName() .. " | " .. flag)
                 else
                     log("→ " .. v:GetFullName())
                 end
@@ -90,21 +105,14 @@ local function runScan(mode)
     end
 
     log("Scan complete. Found " .. found .. " matches.")
-
-    if autoSave and writefile then
-        local name = "DeepSearch_" .. os.date("%Y%m%d_%H%M%S") .. ".txt"
-        writefile(name, table.concat(currentLogs, "\n"))
-    end
 end
 
--- Keybind (RightShift)
+-- Keybind
 UserInputService.InputBegan:Connect(function(input)
     if input.KeyCode == Enum.KeyCode.RightShift then
-        print("[DeepSearch] Toggle UI (UI will be added)")
+        main.Visible = not main.Visible
     end
 end)
 
--- Startup
-log("DeepSearch Full Version loaded.")
-log("Executor: " .. (identifyexecutor and identifyexecutor() or "Unknown"))
-log("User: " .. player.Name)
+log("DeepSearch v12 loaded.")
+log("Press RightShift to toggle UI.")
