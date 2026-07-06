@@ -1,4 +1,4 @@
---// DeepSearch v12 - Lite Version (Updated)
+--// DeepSearch v12 - Lite Version (Fixed)
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -72,20 +72,24 @@ local function log(text)
     console.CanvasPosition = Vector2.new(0, console.AbsoluteCanvasSize.Y)
 end
 
--- Load Wordbanks
+-- Wordbanks
 local mainWordbank = {}
 local priorityWordbank = {}
 
 local function loadWordbanks()
-    local s1, d1 = pcall(function()
+    local success1, data1 = pcall(function()
         return game:HttpGet("https://raw.githubusercontent.com/TunaCANNN/DeepSearch/refs/heads/main/wordbanks/main.json")
     end)
-    if s1 and d1 then mainWordbank = HttpService:JSONDecode(d1) end
+    if success1 and data1 then
+        mainWordbank = HttpService:JSONDecode(data1)
+    end
 
-    local s2, d2 = pcall(function()
+    local success2, data2 = pcall(function()
         return game:HttpGet("https://raw.githubusercontent.com/TunaCANNN/DeepSearch/refs/heads/main/wordbanks/priority.json")
     end)
-    if s2 and d2 then priorityWordbank = HttpService:JSONDecode(d2) end
+    if success2 and data2 then
+        priorityWordbank = HttpService:JSONDecode(data2)
+    end
 
     log("Wordbanks loaded.")
 end
@@ -94,7 +98,9 @@ local function getKeywords()
     if currentWordbankType == "main" then
         local keywords = {}
         for _, list in pairs(mainWordbank) do
-            for _, word in ipairs(list) do table.insert(keywords, word) end
+            for _, word in ipairs(list) do
+                table.insert(keywords, word)
+            end
         end
         return keywords
     else
@@ -129,37 +135,3 @@ local function createButton(text, yPos, callback)
     btn.TextColor3 = Color3.fromRGB(200, 150, 255)
     btn.Text = text
     btn.Font = Enum.Font.Code
-    btn.TextSize = 11
-    btn.Parent = sidebar
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-    btn.MouseButton1Click:Connect(callback)
-end
-
--- Buttons
-local y = 6
-createButton("Quick Scan", y, function() runScan("quick") end); y += 30
-createButton("Deep Scan", y, function() runScan("deep") end); y += 30
-createButton("Main Wordbank", y, function()
-    currentWordbankType = "main"
-    log("Switched to Main Wordbank")
-end); y += 30
-createButton("Priority Wordbank", y, function()
-    currentWordbankType = "priority"
-    log("Switched to Priority Wordbank")
-end); y += 30
-createButton("Clear Logs", y, function()
-    currentLogs = {}
-    output.Text = ""
-end)
-
--- Keybind
-UserInputService.InputBegan:Connect(function(input)
-    if input.KeyCode == Enum.KeyCode.RightShift then
-        main.Visible = not main.Visible
-    end
-end)
-
--- Startup
-loadWordbanks()
-log("DeepSearch Lite loaded.")
-log("Press RightShift to toggle UI.")
