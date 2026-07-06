@@ -1,4 +1,4 @@
---// DeepSearch v12 - Improved GUI Loader
+--// DeepSearch v12 - Fixed GUI Loader
 local player = game.Players.LocalPlayer
 
 local gui = Instance.new("ScreenGui")
@@ -46,22 +46,26 @@ liteBtn.TextSize = 18
 liteBtn.Parent = frame
 Instance.new("UICorner", liteBtn).CornerRadius = UDim.new(0, 8)
 
--- Fixed Load Function with Error Handling
+-- Fixed Load Function
 local function loadVersion(version)
     gui:Destroy()
-    
+
     local url = "https://raw.githubusercontent.com/TunaCANNN/DeepSearch/refs/heads/main/versions/" .. version .. ".lua"
-    
+
     local success, result = pcall(function()
-        return loadstring(game:HttpGet(url))()
+        local code = game:HttpGet(url)
+        if not code or code == "" then
+            error("Empty response from GitHub")
+        end
+        return loadstring(code)()
     end)
-    
+
     if not success then
         warn("[DeepSearch] Failed to load version: " .. tostring(result))
         game:GetService("StarterGui"):SetCore("SendNotification", {
             Title = "DeepSearch Error",
-            Text = "Failed to load version. Check console.",
-            Duration = 5
+            Text = "Failed to load version. Check console (F9).",
+            Duration = 6
         })
     end
 end
@@ -74,4 +78,4 @@ liteBtn.MouseButton1Click:Connect(function()
     loadVersion("lite")
 end)
 
-print("[DeepSearch] Loader ready.")
+print("[DeepSearch] Loader ready. Choose a version.")
