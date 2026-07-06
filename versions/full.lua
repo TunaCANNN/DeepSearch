@@ -1,10 +1,10 @@
---// DeepSearch v12 - Full Version (Wordbank Integration + Categories)
+--// DeepSearch v12 - Full Version (Complete Integration)
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
 local player = game.Players.LocalPlayer
 
--- GUI Setup
+-- GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "DeepSearch"
 gui.ResetOnSpawn = false
@@ -27,7 +27,7 @@ titleBar.Parent = main
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 1, 0)
 title.BackgroundTransparency = 1
-title.Text = "DeepSearch v12"
+title.Text = "DeepSearch v12 - Full"
 title.TextColor3 = Color3.fromRGB(200, 200, 220)
 title.TextScaled = true
 title.Font = Enum.Font.Code
@@ -61,7 +61,7 @@ sidebar.BackgroundColor3 = Color3.fromRGB(15, 8, 25)
 sidebar.Parent = main
 
 local currentLogs = {}
-local currentWordbank = "main" -- Default wordbank
+local currentWordbankType = "main"
 
 local function log(text)
     local ts = os.date("%H:%M:%S")
@@ -77,28 +77,21 @@ local mainWordbank = {}
 local priorityWordbank = {}
 
 local function loadWordbanks()
-    -- Load Main Wordbank
     local success1, data1 = pcall(function()
         return game:HttpGet("https://raw.githubusercontent.com/TunaCANNN/DeepSearch/refs/heads/main/wordbanks/main.json")
     end)
-    if success1 and data1 then
-        mainWordbank = HttpService:JSONDecode(data1)
-    end
+    if success1 and data1 then mainWordbank = HttpService:JSONDecode(data1) end
 
-    -- Load Priority Wordbank
     local success2, data2 = pcall(function()
         return game:HttpGet("https://raw.githubusercontent.com/TunaCANNN/DeepSearch/refs/heads/main/wordbanks/priority.json")
     end)
-    if success2 and data2 then
-        priorityWordbank = HttpService:JSONDecode(data2)
-    end
+    if success2 and data2 then priorityWordbank = HttpService:JSONDecode(data2) end
 
-    log("Wordbanks loaded successfully.")
+    log("Wordbanks loaded.")
 end
 
--- Get current keywords
-local function getCurrentKeywords()
-    if currentWordbank == "main" then
+local function getKeywords()
+    if currentWordbankType == "main" then
         local keywords = {}
         for _, list in pairs(mainWordbank) do
             for _, word in ipairs(list) do table.insert(keywords, word) end
@@ -109,23 +102,36 @@ local function getCurrentKeywords()
     end
 end
 
--- High Value Explanations
 local HighValue = {
     ["FireEvent"] = "RemoteEvent → Rapid fire / No recoil",
     ["ReloadEvent"] = "RemoteEvent → Instant reload",
 }
 
+local function getFlag(obj)
+    if obj:IsA("Script") or obj:IsA("LocalScript") then
+        if obj.Disabled == false then return "Active Script" end
+    end
+    if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+        return "Remote Event/Function"
+    end
+    return nil
+end
+
 local function runScan(mode)
-    log("Starting " .. mode .. " scan (" .. currentWordbank .. " wordbank)...")
-    local keywords = getCurrentKeywords()
+    log("Starting " .. mode .. " scan (" .. currentWordbankType .. ")...")
+    local keywords = getKeywords()
     local found = 0
 
     for _, v in ipairs(game:GetDescendants()) do
         for _, kw in ipairs(keywords) do
             if string.find(v.Name, kw) and not string.find(v:GetFullName(), "CoreGui") then
                 local high = HighValue[v.Name]
+                local flag = getFlag(v)
+
                 if high then
                     log("→ " .. v:GetFullName() .. " | " .. high)
+                elseif flag then
+                    log("→ " .. v:GetFullName() .. " | " .. flag)
                 else
                     log("→ " .. v:GetFullName())
                 end
@@ -158,21 +164,17 @@ local y = 6
 createButton("Quick Scan", y, function() runScan("quick") end); y += 32
 createButton("Deep Scan", y, function() runScan("deep") end); y += 32
 createButton("Full Scan", y, function() runScan("full") end); y += 32
-
 createButton("Main Wordbank", y, function()
-    currentWordbank = "main"
+    currentWordbankType = "main"
     log("Switched to Main Wordbank")
 end); y += 32
-
 createButton("Priority Wordbank", y, function()
-    currentWordbank = "priority"
+    currentWordbankType = "priority"
     log("Switched to Priority Wordbank")
 end); y += 32
-
 createButton("Copy Logs", y, function()
     if setclipboard then setclipboard(table.concat(currentLogs, "\n")) end
 end); y += 32
-
 createButton("Clear Logs", y, function()
     currentLogs = {}
     output.Text = ""
@@ -187,6 +189,5 @@ end)
 
 -- Startup
 loadWordbanks()
-log("DeepSearch v12 loaded.")
-log("Default: Main Wordbank")
+log("DeepSearch v12 Full loaded.")
 log("Press RightShift to toggle UI.")
