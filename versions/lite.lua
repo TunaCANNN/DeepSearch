@@ -1,4 +1,4 @@
---// DeepSearch v12 - Lite Version (Updated)
+--// DeepSearch v12 - Lite Version (Fixed + Copy Logs)
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -11,8 +11,8 @@ gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
 
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 700, 0, 420)
-main.Position = UDim2.new(0.5, -350, 0.5, -210)
+main.Size = UDim2.new(0, 720, 0, 420)
+main.Position = UDim2.new(0.5, -360, 0.5, -210)
 main.BackgroundColor3 = Color3.fromRGB(18, 18, 24)
 main.BorderSizePixel = 0
 main.Parent = gui
@@ -34,10 +34,10 @@ title.Font = Enum.Font.Code
 title.TextXAlignment = Enum.TextXAlignment.Center
 title.Parent = titleBar
 
--- Console
+-- Console (Adjusted to not be cut off by sidebar)
 local console = Instance.new("ScrollingFrame")
-console.Size = UDim2.new(1, -20, 1, -45)
-console.Position = UDim2.new(0, 10, 0, 34)
+console.Size = UDim2.new(1, -135, 1, -45)
+console.Position = UDim2.new(0, 125, 0, 34)
 console.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
 console.ScrollBarThickness = 5
 console.Parent = main
@@ -55,8 +55,8 @@ output.Parent = console
 
 -- Sidebar
 local sidebar = Instance.new("Frame")
-sidebar.Size = UDim2.new(0, 120, 1, -38)
-sidebar.Position = UDim2.new(0, 6, 0, 32)
+sidebar.Size = UDim2.new(0, 118, 1, -38)
+sidebar.Position = UDim2.new(0, 5, 0, 32)
 sidebar.BackgroundColor3 = Color3.fromRGB(15, 8, 25)
 sidebar.Parent = main
 
@@ -146,6 +146,9 @@ end); y += 30
 createButton("Priority Wordbank", y, function()
     currentWordbankType = "priority"
     log("Switched to Priority Wordbank")
+end); y += 30
+createButton("Copy Logs", y, function()
+    if setclipboard then setclipboard(table.concat(currentLogs, "\n")) end
 end); y += 30
 createButton("Clear Logs", y, function()
     currentLogs = {}
