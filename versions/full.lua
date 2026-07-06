@@ -1,4 +1,4 @@
---// DeepSearch v12 - Full Version (Complete)
+--// DeepSearch v12 - Full Version (Complete + Improved Important UI)
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -8,8 +8,6 @@ local player = game.Players.LocalPlayer
 local currentLogs = {}
 local importantFindings = {}
 local currentWordbankType = "main"
-local perfMode = "normal"
-local autoSave = true
 
 -- GUI
 local gui = Instance.new("ScreenGui")
@@ -125,7 +123,7 @@ local function getFlag(obj)
     return nil
 end
 
--- Main Scan
+-- Main Scan Function
 local function runScan(mode)
     log("Starting " .. mode .. " scan (" .. currentWordbankType .. ")...")
     local keywords = getKeywords()
@@ -154,7 +152,7 @@ local function runScan(mode)
     log("Scan complete. Found " .. found .. " matches.")
 end
 
--- Important UI
+-- Improved Important UI (AI-Friendly)
 local function showImportantUI()
     local importantGui = Instance.new("ScreenGui")
     importantGui.Name = "ImportantFindings"
@@ -162,8 +160,8 @@ local function showImportantUI()
     importantGui.Parent = player:WaitForChild("PlayerGui")
 
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 500, 0, 400)
-    frame.Position = UDim2.new(0.5, -250, 0.5, -200)
+    frame.Size = UDim2.new(0, 520, 0, 420)
+    frame.Position = UDim2.new(0.5, -260, 0.5, -210)
     frame.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
     frame.BorderSizePixel = 0
     frame.Parent = importantGui
@@ -219,12 +217,31 @@ local function showImportantUI()
     if #importantFindings == 0 then
         contentLabel.Text = "No important items found yet.\nRun a scan first."
     else
-        local text = ""
-        for _, finding in ipairs(importantFindings) do
-            text = text .. finding .. "\n\n"
+        local text = "=== DeepSearch Important Findings ===\n\n"
+        for i, finding in ipairs(importantFindings) do
+            text = text .. "[" .. i .. "] " .. finding .. "\n\n"
         end
+        text = text .. "=== End of Findings ===\nYou can copy this and paste it into an AI for analysis."
         contentLabel.Text = text
     end
+
+    -- Copy All Button
+    local copyBtn = Instance.new("TextButton")
+    copyBtn.Size = UDim2.new(0, 120, 0, 28)
+    copyBtn.Position = UDim2.new(1, -130, 1, -35)
+    copyBtn.BackgroundColor3 = Color3.fromRGB(40, 100, 60)
+    copyBtn.Text = "Copy All"
+    copyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    copyBtn.Font = Enum.Font.Code
+    copyBtn.TextSize = 14
+    copyBtn.Parent = frame
+    Instance.new("UICorner", copyBtn).CornerRadius = UDim.new(0, 6)
+
+    copyBtn.MouseButton1Click:Connect(function()
+        if setclipboard then
+            setclipboard(contentLabel.Text)
+        end
+    end)
 end
 
 -- Button Creator
