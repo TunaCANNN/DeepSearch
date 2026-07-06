@@ -1,4 +1,4 @@
---// DeepSearch v12 - Lite Version (Fixed + Copy Logs)
+--// DeepSearch v12 - Lite Version (Fixed Layout)
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -34,9 +34,9 @@ title.Font = Enum.Font.Code
 title.TextXAlignment = Enum.TextXAlignment.Center
 title.Parent = titleBar
 
--- Console (Adjusted to not be cut off by sidebar)
+-- Console (Fixed - no longer cut off)
 local console = Instance.new("ScrollingFrame")
-console.Size = UDim2.new(1, -135, 1, -45)
+console.Size = UDim2.new(1, -130, 1, -45)
 console.Position = UDim2.new(0, 125, 0, 34)
 console.BackgroundColor3 = Color3.fromRGB(10, 10, 14)
 console.ScrollBarThickness = 5
