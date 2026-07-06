@@ -1,4 +1,4 @@
---// DeepSearch v12 - Full Version (Complete + Improved Important UI)
+--// DeepSearch v12 - Full Version (Movable + Close Button)
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -38,6 +38,43 @@ title.TextScaled = true
 title.Font = Enum.Font.Code
 title.TextXAlignment = Enum.TextXAlignment.Center
 title.Parent = titleBar
+
+-- Make Main Window Movable
+local draggingMain
+local dragInputMain
+local dragStartMain
+local startPosMain
+
+local function updateMain(input)
+    local delta = input.Position - dragStartMain
+    main.Position = UDim2.new(startPosMain.X.Scale, startPosMain.X.Offset + delta.X, startPosMain.Y.Scale, startPosMain.Y.Offset + delta.Y)
+end
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        draggingMain = true
+        dragStartMain = input.Position
+        startPosMain = main.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                draggingMain = false
+            end
+        end)
+    end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInputMain = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInputMain and draggingMain then
+        updateMain(input)
+    end
+end)
 
 -- Console
 local console = Instance.new("ScrollingFrame")
@@ -104,13 +141,10 @@ local function getKeywords()
     end
 end
 
--- High Value Items
 local HighValue = {
     ["FireEvent"] = "RemoteEvent → Rapid fire / No recoil",
     ["ReloadEvent"] = "RemoteEvent → Instant reload",
-    ["Stats"] = "Weapon stats folder → Can modify damage",
-    ["IsAmmo"] = "Ammo marker",
-    ["MaxAmmo"] = "Max ammo value",
+    ["Stats"] = "Weapon stats → Can modify damage",
 }
 
 local function getFlag(obj)
@@ -123,7 +157,6 @@ local function getFlag(obj)
     return nil
 end
 
--- Main Scan Function
 local function runScan(mode)
     log("Starting " .. mode .. " scan (" .. currentWordbankType .. ")...")
     local keywords = getKeywords()
@@ -152,7 +185,7 @@ local function runScan(mode)
     log("Scan complete. Found " .. found .. " matches.")
 end
 
--- Improved Important UI (AI-Friendly)
+-- Important UI with Close + Draggable
 local function showImportantUI()
     local importantGui = Instance.new("ScreenGui")
     importantGui.Name = "ImportantFindings"
@@ -168,6 +201,7 @@ local function showImportantUI()
 
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
+    -- Top Bar (Draggable)
     local topBar = Instance.new("Frame")
     topBar.Size = UDim2.new(1, 0, 0, 30)
     topBar.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
@@ -175,14 +209,23 @@ local function showImportantUI()
 
     Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 10)
 
-    local icon = Instance.new("Frame")
-    icon.Size = UDim2.new(0, 18, 0, 18)
-    icon.Position = UDim2.new(1, -26, 0.5, -9)
-    icon.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-    icon.Rotation = 45
-    icon.Parent = topBar
-    Instance.new("UICorner", icon).CornerRadius = UDim.new(0, 3)
+    -- Red Diamond (Close Button)
+    local closeBtn = Instance.new("Frame")
+    closeBtn.Size = UDim2.new(0, 18, 0, 18)
+    closeBtn.Position = UDim2.new(1, -26, 0.5, -9)
+    closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    closeBtn.Rotation = 45
+    closeBtn.Parent = topBar
+    Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 3)
 
+    -- Make Close Button work
+    closeBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            importantGui:Destroy()
+        end
+    end)
+
+    -- Title
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Size = UDim2.new(1, -40, 1, 0)
     titleLabel.Position = UDim2.new(0, 10, 0, 0)
@@ -194,6 +237,7 @@ local function showImportantUI()
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     titleLabel.Parent = topBar
 
+    -- Content
     local content = Instance.new("ScrollingFrame")
     content.Size = UDim2.new(1, -20, 1, -40)
     content.Position = UDim2.new(0, 10, 0, 35)
@@ -221,25 +265,44 @@ local function showImportantUI()
         for i, finding in ipairs(importantFindings) do
             text = text .. "[" .. i .. "] " .. finding .. "\n\n"
         end
-        text = text .. "=== End of Findings ===\nYou can copy this and paste it into an AI for analysis."
+        text = text .. "=== End of Findings ==="
         contentLabel.Text = text
     end
 
-    -- Copy All Button
-    local copyBtn = Instance.new("TextButton")
-    copyBtn.Size = UDim2.new(0, 120, 0, 28)
-    copyBtn.Position = UDim2.new(1, -130, 1, -35)
-    copyBtn.BackgroundColor3 = Color3.fromRGB(40, 100, 60)
-    copyBtn.Text = "Copy All"
-    copyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    copyBtn.Font = Enum.Font.Code
-    copyBtn.TextSize = 14
-    copyBtn.Parent = frame
-    Instance.new("UICorner", copyBtn).CornerRadius = UDim.new(0, 6)
+    -- Make Important Window Movable
+    local draggingImp
+    local dragInputImp
+    local dragStartImp
+    local startPosImp
 
-    copyBtn.MouseButton1Click:Connect(function()
-        if setclipboard then
-            setclipboard(contentLabel.Text)
+    local function updateImp(input)
+        local delta = input.Position - dragStartImp
+        frame.Position = UDim2.new(startPosImp.X.Scale, startPosImp.X.Offset + delta.X, startPosImp.Y.Scale, startPosImp.Y.Offset + delta.Y)
+    end
+
+    topBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            draggingImp = true
+            dragStartImp = input.Position
+            startPosImp = frame.Position
+        end
+    end)
+
+    topBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInputImp = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInputImp and draggingImp then
+            updateImp(input)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            draggingImp = false
         end
     end)
 end
