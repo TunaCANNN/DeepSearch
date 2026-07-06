@@ -1,4 +1,4 @@
---// DeepSearch v12 - Lite Version (Fixed & Cleaned)
+--// DeepSearch v12 - Lite Version (Updated)
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -80,16 +80,12 @@ local function loadWordbanks()
     local success1, data1 = pcall(function()
         return game:HttpGet("https://raw.githubusercontent.com/TunaCANNN/DeepSearch/refs/heads/main/wordbanks/main.json")
     end)
-    if success1 and data1 then
-        mainWordbank = HttpService:JSONDecode(data1)
-    end
+    if success1 and data1 then mainWordbank = HttpService:JSONDecode(data1) end
 
     local success2, data2 = pcall(function()
         return game:HttpGet("https://raw.githubusercontent.com/TunaCANNN/DeepSearch/refs/heads/main/wordbanks/priority.json")
     end)
-    if success2 and data2 then
-        priorityWordbank = HttpService:JSONDecode(data2)
-    end
+    if success2 and data2 then priorityWordbank = HttpService:JSONDecode(data2) end
 
     log("Wordbanks loaded.")
 end
@@ -98,9 +94,7 @@ local function getKeywords()
     if currentWordbankType == "main" then
         local keywords = {}
         for _, list in pairs(mainWordbank) do
-            for _, word in ipairs(list) do
-                table.insert(keywords, word)
-            end
+            for _, word in ipairs(list) do table.insert(keywords, word) end
         end
         return keywords
     else
