@@ -1,4 +1,4 @@
---// DeepSearch v12 - Full Version (Movable + Close Button)
+--// DeepSearch v12 - Full Version (Fixed Movable + Close Button)
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -9,7 +9,7 @@ local currentLogs = {}
 local importantFindings = {}
 local currentWordbankType = "main"
 
--- GUI
+-- Main GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "DeepSearch"
 gui.ResetOnSpawn = false
@@ -39,26 +39,26 @@ title.Font = Enum.Font.Code
 title.TextXAlignment = Enum.TextXAlignment.Center
 title.Parent = titleBar
 
--- Make Main Window Movable
-local draggingMain
-local dragInputMain
-local dragStartMain
-local startPosMain
+-- Make Main Window Draggable
+local dragging = false
+local dragInput
+local dragStart
+local startPos
 
-local function updateMain(input)
-    local delta = input.Position - dragStartMain
-    main.Position = UDim2.new(startPosMain.X.Scale, startPosMain.X.Offset + delta.X, startPosMain.Y.Scale, startPosMain.Y.Offset + delta.Y)
+local function update(input)
+    local delta = input.Position - dragStart
+    main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 end
 
 titleBar.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        draggingMain = true
-        dragStartMain = input.Position
-        startPosMain = main.Position
+        dragging = true
+        dragStart = input.Position
+        startPos = main.Position
 
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
-                draggingMain = false
+                dragging = false
             end
         end)
     end
@@ -66,13 +66,13 @@ end)
 
 titleBar.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInputMain = input
+        dragInput = input
     end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if input == dragInputMain and draggingMain then
-        updateMain(input)
+    if input == dragInput and dragging then
+        update(input)
     end
 end)
 
@@ -201,7 +201,7 @@ local function showImportantUI()
 
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
 
-    -- Top Bar (Draggable)
+    -- Top Bar
     local topBar = Instance.new("Frame")
     topBar.Size = UDim2.new(1, 0, 0, 30)
     topBar.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
@@ -210,19 +210,19 @@ local function showImportantUI()
     Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 10)
 
     -- Red Diamond (Close Button)
-    local closeBtn = Instance.new("Frame")
-    closeBtn.Size = UDim2.new(0, 18, 0, 18)
-    closeBtn.Position = UDim2.new(1, -26, 0.5, -9)
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0, 20, 0, 20)
+    closeBtn.Position = UDim2.new(1, -28, 0.5, -10)
     closeBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-    closeBtn.Rotation = 45
+    closeBtn.Text = ""
+    closeBtn.AutoButtonColor = false
     closeBtn.Parent = topBar
-    Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 3)
 
-    -- Make Close Button work
-    closeBtn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            importantGui:Destroy()
-        end
+    Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 4)
+
+    -- Close when clicked
+    closeBtn.MouseButton1Click:Connect(function()
+        importantGui:Destroy()
     end)
 
     -- Title
@@ -269,8 +269,8 @@ local function showImportantUI()
         contentLabel.Text = text
     end
 
-    -- Make Important Window Movable
-    local draggingImp
+    -- Make Important Window Draggable
+    local draggingImp = false
     local dragInputImp
     local dragStartImp
     local startPosImp
