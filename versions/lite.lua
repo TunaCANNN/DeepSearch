@@ -1,4 +1,4 @@
---// DeepSearch v12 - Lite Version (With Wordbank Integration)
+--// DeepSearch v12 - Lite Version (Updated)
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
