@@ -1,4 +1,4 @@
---// DeepSearch v12 - Lite Version (Fixed)
+--// DeepSearch v12 - Lite Version (Fixed & Cleaned)
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -135,3 +135,37 @@ local function createButton(text, yPos, callback)
     btn.TextColor3 = Color3.fromRGB(200, 150, 255)
     btn.Text = text
     btn.Font = Enum.Font.Code
+    btn.TextSize = 11
+    btn.Parent = sidebar
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    btn.MouseButton1Click:Connect(callback)
+end
+
+-- Buttons
+local y = 6
+createButton("Quick Scan", y, function() runScan("quick") end); y += 30
+createButton("Deep Scan", y, function() runScan("deep") end); y += 30
+createButton("Main Wordbank", y, function()
+    currentWordbankType = "main"
+    log("Switched to Main Wordbank")
+end); y += 30
+createButton("Priority Wordbank", y, function()
+    currentWordbankType = "priority"
+    log("Switched to Priority Wordbank")
+end); y += 30
+createButton("Clear Logs", y, function()
+    currentLogs = {}
+    output.Text = ""
+end)
+
+-- Keybind
+UserInputService.InputBegan:Connect(function(input)
+    if input.KeyCode == Enum.KeyCode.RightShift then
+        main.Visible = not main.Visible
+    end
+end)
+
+-- Startup
+loadWordbanks()
+log("DeepSearch Lite loaded.")
+log("Press RightShift to toggle UI.")
