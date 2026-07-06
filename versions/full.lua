@@ -1,8 +1,15 @@
---// DeepSearch v12 - Full Version (Complete Integration)
+--// DeepSearch v12 - Full Version (Complete)
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
 
 local player = game.Players.LocalPlayer
+
+-- Variables
+local currentLogs = {}
+local importantFindings = {}
+local currentWordbankType = "main"
+local perfMode = "normal"
+local autoSave = true
 
 -- GUI
 local gui = Instance.new("ScreenGui")
@@ -27,7 +34,7 @@ titleBar.Parent = main
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 1, 0)
 title.BackgroundTransparency = 1
-title.Text = "DeepSearch v12 - Full"
+title.Text = "DeepSearch v12"
 title.TextColor3 = Color3.fromRGB(200, 200, 220)
 title.TextScaled = true
 title.Font = Enum.Font.Code
@@ -60,9 +67,6 @@ sidebar.Position = UDim2.new(0, 6, 0, 32)
 sidebar.BackgroundColor3 = Color3.fromRGB(15, 8, 25)
 sidebar.Parent = main
 
-local currentLogs = {}
-local currentWordbankType = "main"
-
 local function log(text)
     local ts = os.date("%H:%M:%S")
     local line = "["..ts.."] "..text
@@ -72,20 +76,20 @@ local function log(text)
     console.CanvasPosition = Vector2.new(0, console.AbsoluteCanvasSize.Y)
 end
 
--- Load Wordbanks
+-- Wordbanks
 local mainWordbank = {}
 local priorityWordbank = {}
 
 local function loadWordbanks()
-    local success1, data1 = pcall(function()
+    local s1, d1 = pcall(function()
         return game:HttpGet("https://raw.githubusercontent.com/TunaCANNN/DeepSearch/refs/heads/main/wordbanks/main.json")
     end)
-    if success1 and data1 then mainWordbank = HttpService:JSONDecode(data1) end
+    if s1 and d1 then mainWordbank = HttpService:JSONDecode(d1) end
 
-    local success2, data2 = pcall(function()
+    local s2, d2 = pcall(function()
         return game:HttpGet("https://raw.githubusercontent.com/TunaCANNN/DeepSearch/refs/heads/main/wordbanks/priority.json")
     end)
-    if success2 and data2 then priorityWordbank = HttpService:JSONDecode(data2) end
+    if s2 and d2 then priorityWordbank = HttpService:JSONDecode(d2) end
 
     log("Wordbanks loaded.")
 end
@@ -102,9 +106,13 @@ local function getKeywords()
     end
 end
 
+-- High Value Items
 local HighValue = {
     ["FireEvent"] = "RemoteEvent → Rapid fire / No recoil",
     ["ReloadEvent"] = "RemoteEvent → Instant reload",
+    ["Stats"] = "Weapon stats folder → Can modify damage",
+    ["IsAmmo"] = "Ammo marker",
+    ["MaxAmmo"] = "Max ammo value",
 }
 
 local function getFlag(obj)
@@ -117,6 +125,7 @@ local function getFlag(obj)
     return nil
 end
 
+-- Main Scan
 local function runScan(mode)
     log("Starting " .. mode .. " scan (" .. currentWordbankType .. ")...")
     local keywords = getKeywords()
@@ -130,6 +139,7 @@ local function runScan(mode)
 
                 if high then
                     log("→ " .. v:GetFullName() .. " | " .. high)
+                    table.insert(importantFindings, v:GetFullName() .. " → " .. high)
                 elseif flag then
                     log("→ " .. v:GetFullName() .. " | " .. flag)
                 else
@@ -142,6 +152,79 @@ local function runScan(mode)
     end
 
     log("Scan complete. Found " .. found .. " matches.")
+end
+
+-- Important UI
+local function showImportantUI()
+    local importantGui = Instance.new("ScreenGui")
+    importantGui.Name = "ImportantFindings"
+    importantGui.ResetOnSpawn = false
+    importantGui.Parent = player:WaitForChild("PlayerGui")
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 500, 0, 400)
+    frame.Position = UDim2.new(0.5, -250, 0.5, -200)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 26)
+    frame.BorderSizePixel = 0
+    frame.Parent = importantGui
+
+    Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 10)
+
+    local topBar = Instance.new("Frame")
+    topBar.Size = UDim2.new(1, 0, 0, 30)
+    topBar.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+    topBar.Parent = frame
+
+    Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 10)
+
+    local icon = Instance.new("Frame")
+    icon.Size = UDim2.new(0, 18, 0, 18)
+    icon.Position = UDim2.new(1, -26, 0.5, -9)
+    icon.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    icon.Rotation = 45
+    icon.Parent = topBar
+    Instance.new("UICorner", icon).CornerRadius = UDim.new(0, 3)
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, -40, 1, 0)
+    titleLabel.Position = UDim2.new(0, 10, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = "Important Findings"
+    titleLabel.TextColor3 = Color3.fromRGB(220, 100, 100)
+    titleLabel.TextScaled = true
+    titleLabel.Font = Enum.Font.Code
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = topBar
+
+    local content = Instance.new("ScrollingFrame")
+    content.Size = UDim2.new(1, -20, 1, -40)
+    content.Position = UDim2.new(0, 10, 0, 35)
+    content.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+    content.ScrollBarThickness = 5
+    content.Parent = frame
+
+    Instance.new("UICorner", content).CornerRadius = UDim.new(0, 8)
+
+    local contentLabel = Instance.new("TextLabel")
+    contentLabel.Size = UDim2.new(1, -10, 1, 0)
+    contentLabel.BackgroundTransparency = 1
+    contentLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
+    contentLabel.TextXAlignment = Enum.TextXAlignment.Left
+    contentLabel.TextYAlignment = Enum.TextYAlignment.Top
+    contentLabel.Font = Enum.Font.Code
+    contentLabel.TextSize = 14
+    contentLabel.TextWrapped = true
+    contentLabel.Parent = content
+
+    if #importantFindings == 0 then
+        contentLabel.Text = "No important items found yet.\nRun a scan first."
+    else
+        local text = ""
+        for _, finding in ipairs(importantFindings) do
+            text = text .. finding .. "\n\n"
+        end
+        contentLabel.Text = text
+    end
 end
 
 -- Button Creator
@@ -171,6 +254,9 @@ end); y += 32
 createButton("Priority Wordbank", y, function()
     currentWordbankType = "priority"
     log("Switched to Priority Wordbank")
+end); y += 32
+createButton("Important", y, function()
+    showImportantUI()
 end); y += 32
 createButton("Copy Logs", y, function()
     if setclipboard then setclipboard(table.concat(currentLogs, "\n")) end
