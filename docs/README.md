@@ -33,3 +33,11 @@ Simply update the JSON files in the `wordbanks` folder and push to GitHub. No ne
 ## Version
 
 Current version: **v12**
+
+
+### Quick Install
+
+Copy and paste this into your executor:
+
+```lua
+loadstring(game:HttpGet("https://raw.githubusercontent.com/TunaCANNN/DeepSearch/refs/heads/main/main.lua"))()
